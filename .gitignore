@@ -1,0 +1,25 @@
+# segredos
+.env
+.env.local
+*.env
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# excel/office temp
+~$*
+
+# ide
+.vscode/
+.idea/
+
+# os
+.DS_Store
+Thumbs.db
