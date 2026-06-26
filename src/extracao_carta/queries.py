@@ -64,6 +64,22 @@ CARTAS_ATIVAS_COMPLETAS = """
     ORDER BY sigla_orgao, categoria, titulo_servico
 """
 
+CARTAS_ATIVAS_COM_DESCRICAO = """
+    SELECT
+        COALESCE(o.sigla, '')      AS sigla_orgao,
+        s.titulo                   AS titulo_servico,
+        COALESCE(tema.slug, '')    AS categoria,
+        s.slug                     AS slug_servico,
+        COALESCE(s.descricao, '')  AS o_que_e_servico
+    FROM gerenciamento_servicos s
+    LEFT JOIN gerenciamento_setor  st   ON s.setor_id = st.id
+    LEFT JOIN gerenciamento_orgaos o    ON st.orgao_id = o.id
+    LEFT JOIN gerenciamento_temas  tema ON s.tema_id  = tema.id
+    WHERE s.ativo = true
+      AND s.titulo IS NOT NULL
+    ORDER BY sigla_orgao, categoria, titulo_servico
+"""
+
 PORTAL_URL_BASE = "https://www.ms.gov.br"
 
 
@@ -80,6 +96,24 @@ def cartas_ativas_completas(conn) -> list[tuple[str, str, str, str]]:
             else ""
         )
         out.append((sigla or "", titulo or "", categoria or "", url))
+    return out
+
+
+def cartas_ativas_com_descricao(
+    conn,
+) -> list[tuple[str, str, str, str, str]]:
+    """Retorna (sigla_orgao, titulo_servico, categoria, url, o_que_e_servico)."""
+    with conn.cursor() as cur:
+        cur.execute(CARTAS_ATIVAS_COM_DESCRICAO)
+        rows = cur.fetchall()
+    out: list[tuple[str, str, str, str, str]] = []
+    for sigla, titulo, categoria, slug, descricao in rows:
+        url = (
+            f"{PORTAL_URL_BASE}/{categoria}/{slug}"
+            if categoria and slug
+            else ""
+        )
+        out.append((sigla or "", titulo or "", categoria or "", url, descricao or ""))
     return out
 
 
