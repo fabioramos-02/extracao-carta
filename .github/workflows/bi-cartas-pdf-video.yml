@@ -1,15 +1,11 @@
 name: BI — Cartas com PDF e Vídeo
 
-# HTML estático gerado localmente e commitado em:
-#   demandas/2026-06/006-cartas-pdf-video/bi/index.html
+# Fluxo:
+#   1. Local: python scripts/extract_cartas_pdf_video.py  → gera XLSX
+#   2. Local: git add output/cartas-pdf-video.xlsx && git commit && git push
+#   3. CI (este workflow): instala DS, gera HTML com CSS+JS inlinados, deploya Pages
 #
-# Para atualizar o relatório:
-#   python scripts/extract_cartas_pdf_video.py
-#   python scripts/generate_bi.py
-#   git add demandas/2026-06/006-cartas-pdf-video/bi/index.html \
-#           demandas/2026-06/006-cartas-pdf-video/output/cartas-pdf-video.xlsx
-#   git commit -m "chore: atualiza BI cartas-pdf-video"
-#   git push
+# Nenhuma credencial de banco usada aqui.
 
 on:
   push:
@@ -31,14 +27,35 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Montar artefato
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências Python
+        run: pip install --quiet openpyxl jinja2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar Design System MS
+        run: npm install --silent @design-system-ms/ds-sis
+
+      - name: Gerar BI HTML com DS inlinado
         run: |
-          mkdir -p _site/bi-cartas-pdf-video
-          cp demandas/2026-06/006-cartas-pdf-video/bi/index.html _site/bi-cartas-pdf-video/
-          printf '<meta http-equiv="refresh" content="0;url=bi-cartas-pdf-video/">' > _site/index.html
+          python scripts/generate_bi.py \
+            --in  demandas/2026-06/006-cartas-pdf-video/output/cartas-pdf-video.xlsx \
+            --out _site/bi-cartas-pdf-video/index.html \
+            --template demandas/2026-06/006-cartas-pdf-video/bi/template.html \
+            --ds-css node_modules/@design-system-ms/ds-sis/dist/css/ds-sis.css \
+            --ds-js  node_modules/@design-system-ms/ds-sis/dist/js/ds-sis.js
+
+      - name: Adicionar redirect raiz
+        run: printf '<meta http-equiv="refresh" content="0;url=bi-cartas-pdf-video/">' > _site/index.html
 
       - uses: actions/configure-pages@v5
 

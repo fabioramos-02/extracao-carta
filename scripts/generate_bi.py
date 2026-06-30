@@ -35,8 +35,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--in",       dest="in_path",  type=Path, default=_DEFAULT_IN)
     p.add_argument("--out",      dest="out_path", type=Path, default=_DEFAULT_OUT)
     p.add_argument("--template", type=Path,        default=_DEFAULT_TPL)
-    p.add_argument("--ds-css",   dest="ds_css",   type=Path, default=None,
+    p.add_argument("--ds-css", dest="ds_css", type=Path, default=None,
                    help="ds-sis.css inlinado no HTML. Path: dist/css/ds-sis.css")
+    p.add_argument("--ds-js",  dest="ds_js",  type=Path, default=None,
+                   help="ds-sis.js inlinado no HTML. Path: dist/js/ds-sis.js")
     return p.parse_args()
 
 
@@ -98,11 +100,17 @@ def main() -> int:
     rows = _read_rows(args.in_path)
     cartas = _group_by_carta(rows)
 
-    css_content = ""
-    if args.ds_css and Path(args.ds_css).exists():
-        css_content = Path(args.ds_css).read_text(encoding="utf-8")
-    elif args.ds_css:
-        print(f"[warn] ds-css não encontrado: {args.ds_css} — HTML sem DS")
+    def _read_asset(path: Path | None, label: str) -> str:
+        if not path:
+            return ""
+        p = Path(path)
+        if p.exists():
+            return p.read_text(encoding="utf-8")
+        print(f"[warn] {label} não encontrado: {path}")
+        return ""
+
+    css_content = _read_asset(args.ds_css, "ds-css")
+    js_content  = _read_asset(args.ds_js,  "ds-js")
 
     args.out_path.parent.mkdir(parents=True, exist_ok=True)
     env = Environment(
@@ -113,6 +121,7 @@ def main() -> int:
         cartas=cartas,
         stats=_stats(rows, cartas),
         css_content=css_content,
+        js_content=js_content,
     )
     args.out_path.write_text(html, encoding="utf-8")
 
