@@ -122,3 +122,42 @@ def titulos_por_categoria(conn, slug: str) -> list[tuple[str, str]]:
     with conn.cursor() as cur:
         cur.execute(TITULOS_POR_CATEGORIA, (slug,))
         return list(cur.fetchall())
+
+
+CARTAS_SECOES_BRUTAS = """
+    SELECT
+        COALESCE(o.sigla, '')              AS sigla_orgao,
+        s.titulo                           AS titulo_servico,
+        COALESCE(tema.slug, '')            AS categoria,
+        s.slug                             AS slug_servico,
+        COALESCE(s.descricao, '')          AS descricao,
+        COALESCE(s.requisitos, '')         AS requisitos,
+        COALESCE(s.custo, '')              AS custo,
+        COALESCE(s.publico, '')            AS publico,
+        COALESCE(s.publico_especifico, '') AS publico_especifico,
+        COALESCE(CAST(s.tempo_total AS TEXT), '') AS tempo_total,
+        COALESCE(s.informacoes_extra, '')  AS informacoes_extra
+    FROM gerenciamento_servicos s
+    LEFT JOIN gerenciamento_setor  st   ON s.setor_id  = st.id
+    LEFT JOIN gerenciamento_orgaos o    ON st.orgao_id = o.id
+    LEFT JOIN gerenciamento_temas  tema ON s.tema_id   = tema.id
+    WHERE s.ativo = true AND s.titulo IS NOT NULL
+    ORDER BY sigla_orgao, categoria, titulo_servico
+"""
+
+SECOES = (
+    "descricao",
+    "requisitos",
+    "custo",
+    "publico",
+    "publico_especifico",
+    "tempo_total",
+    "informacoes_extra",
+)
+
+
+def cartas_secoes_brutas(conn) -> list[tuple]:
+    """Retorna todas as cartas ativas com conteúdo HTML de cada seção."""
+    with conn.cursor() as cur:
+        cur.execute(CARTAS_SECOES_BRUTAS)
+        return list(cur.fetchall())
