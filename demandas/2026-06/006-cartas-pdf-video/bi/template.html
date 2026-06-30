@@ -35,6 +35,17 @@
     tr.checked { background: #f0fff4 !important; }
     tr.checked td { color: #276749; }
 
+    .expand-btn {
+      margin-top: 4px;
+      background: none;
+      border: none;
+      color: #004F9F;
+      font-size: .78rem;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline dotted;
+    }
+    .expand-btn:hover { color: #003070; }
     .hidden { display: none !important; }
     a { color: #004F9F; }
   </style>
@@ -120,12 +131,17 @@
           <td style="min-width:320px;">
             <div class="link-list">
               {% for lk in c.links %}
-              <div class="link-row">
+              <div class="link-row{% if loop.index > 3 %} link-extra hidden{% endif %}">
                 <span class="tag {% if lk.tipo == 'pdf' %}tag-info{% else %}tag-warning{% endif %}">{{ lk.tipo | upper }}</span>
                 <span class="link-secao">{{ lk.secao }}:</span>
-                <a href="{{ lk.url_midia }}" target="_blank" rel="noopener" class="link-url" title="{{ lk.url_midia }}">{{ lk.url_midia | truncate(55) }} ↗</a>
+                <a href="{{ lk.url_midia }}" target="_blank" rel="noopener" class="link-url" title="{{ lk.url_midia }}">{{ lk.url_midia | truncate(50) }} ↗</a>
               </div>
               {% endfor %}
+              {% if c.links | length > 3 %}
+              <button class="expand-btn" onclick="toggleLinks(this)" data-total="{{ c.links | length }}">
+                + {{ c.links | length - 3 }} links — ver mais
+              </button>
+              {% endif %}
             </div>
           </td>
           <td>
@@ -204,6 +220,17 @@
     btn.classList.add("btn-primary");
     _tipo = btn.dataset.tipo;
     applyFilters();
+  }
+
+  function toggleLinks(btn) {
+    const list   = btn.closest(".link-list");
+    const extras = list.querySelectorAll(".link-extra");
+    const open   = extras[0] && !extras[0].classList.contains("hidden");
+    extras.forEach(el => el.classList.toggle("hidden", open));
+    const total = parseInt(btn.dataset.total, 10);
+    btn.textContent = open
+      ? `+ ${total - 3} links — ver mais`
+      : `− ver menos`;
   }
 
   function applyFilters() {
