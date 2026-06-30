@@ -134,7 +134,7 @@ CARTAS_SECOES_BRUTAS = """
         COALESCE(s.requisitos, '')         AS requisitos,
         COALESCE(s.custo, '')              AS custo,
         COALESCE(s.publico, '')            AS publico,
-        COALESCE(s.publico_especifico, '') AS publico_especifico,
+        COALESCE(array_to_string(s.publico_especifico, ', '), '') AS publico_especifico,
         COALESCE(CAST(s.tempo_total AS TEXT), '') AS tempo_total,
         COALESCE(s.informacoes_extra, '')  AS informacoes_extra
     FROM gerenciamento_servicos s

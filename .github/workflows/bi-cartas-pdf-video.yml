@@ -13,8 +13,8 @@ name: BI — Cartas com PDF e Vídeo
 
 on:
   push:
-    paths:
-      - "demandas/2026-06/006-cartas-pdf-video/bi/index.html"
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:

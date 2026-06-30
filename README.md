@@ -6,6 +6,12 @@ Toolkit para **extrair dados da Carta de Serviços do Governo de Mato Grosso do 
 
 > Mantido por [Secretaria-Executiva de Transformação Digital — SETDIG/SEGOV/MS](https://www.setdig.ms.gov.br/).
 
+## Relatórios publicados
+
+| Demanda | BI / Relatório |
+|---|---|
+| 006 — Cartas com PDF e Vídeo | [Acessar relatório](https://fabioramos-02.github.io/extracao-carta/bi-cartas-pdf-video/) |
+
 ## Visão
 
 Cada demanda recebida (de SEFAZ, SAD, áreas internas etc.) é isolada em uma pasta datada
