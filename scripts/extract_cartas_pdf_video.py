@@ -38,12 +38,18 @@ HEADERS = (
 )
 
 
+_DEFAULT_OUT = (
+    Path(__file__).resolve().parents[1]
+    / "demandas/2026-06/006-cartas-pdf-video/output/cartas-pdf-video.xlsx"
+)
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Exporta cartas com PDF/vídeo para XLSX."
     )
     p.add_argument("--env", default=".env")
-    p.add_argument("--out", dest="out_path", required=True, type=Path)
+    p.add_argument("--out", dest="out_path", type=Path, default=_DEFAULT_OUT)
     return p.parse_args()
 
 

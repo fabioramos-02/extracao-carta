@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BI — Cartas com PDF e Vídeo</title>
-  {% if has_ds_css %}
-  <link rel="stylesheet" href="./ds-sis.css" />
-  {% endif %}
+  {% if css_content %}<style>{{ css_content }}</style>{% endif %}
   <style>
     :root {
       --bi-gap: 1.5rem;
