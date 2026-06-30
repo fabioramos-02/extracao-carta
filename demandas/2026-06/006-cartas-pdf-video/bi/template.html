@@ -3,144 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BI — Cartas com PDF e Vídeo</title>
+  <title>Auditoria — Cartas com PDF e Vídeo · SETDIG</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
   {% if css_content %}<style>{{ css_content }}</style>{% endif %}
   <style>
-    :root {
-      --bi-gap: 1.5rem;
-      --bi-radius: 6px;
-    }
-    body {
-      font-family: system-ui, sans-serif;
-      background: var(--color-neutral-100, #f4f6f9);
-      color: var(--color-neutral-700, #2d3748);
-      margin: 0;
-    }
-    .bi-main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--bi-gap);
-    }
+    body { background: #f4f6f9; margin: 0; font-family: system-ui, sans-serif; }
+    .bi-main { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+
     /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: var(--bi-gap);
-    }
-    .stat-card {
-      background: #fff;
-      border: 1px solid var(--color-neutral-200, #e2e8f0);
-      border-radius: var(--bi-radius);
-      padding: 1rem 1.25rem;
-    }
-    .stat-card .value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--color-primary-500, #004F9F);
-      line-height: 1;
-    }
-    .stat-card .label {
-      font-size: 0.78rem;
-      color: var(--color-neutral-500, #718096);
-      margin-top: 0.25rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem 1.25rem; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; color: #004F9F; line-height: 1; }
+    .stat-card .label { font-size: 0.75rem; color: #718096; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: .04em; }
+    #stat-verificadas .value { color: #276749; }
+
     /* Toolbar */
-    .toolbar {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .toolbar input[type="search"] {
-      flex: 1;
-      min-width: 220px;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--color-neutral-300, #cbd5e0);
-      border-radius: var(--bi-radius);
-      font-size: 0.9rem;
-      background: #fff;
-    }
-    .filter-btn {
-      padding: 0.4rem 0.9rem;
-      border: 1px solid var(--color-primary-500, #004F9F);
-      border-radius: 20px;
-      background: #fff;
-      color: var(--color-primary-500, #004F9F);
-      cursor: pointer;
-      font-size: 0.82rem;
-      transition: background 0.15s;
-    }
-    .filter-btn.active,
-    .filter-btn:hover {
-      background: var(--color-primary-500, #004F9F);
-      color: #fff;
-    }
-    /* Table */
-    .table-wrap {
-      overflow-x: auto;
-      background: #fff;
-      border: 1px solid var(--color-neutral-200, #e2e8f0);
-      border-radius: var(--bi-radius);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-    thead th {
-      background: var(--color-primary-500, #004F9F);
-      color: #fff;
-      padding: 0.6rem 0.8rem;
-      text-align: left;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    tbody tr { border-bottom: 1px solid var(--color-neutral-100, #f4f6f9); }
-    tbody tr:hover { background: var(--color-primary-100, #e8f0fb); }
-    tbody td { padding: 0.55rem 0.8rem; vertical-align: middle; }
-    /* Badges */
-    .badge {
-      display: inline-block;
-      padding: 0.15rem 0.55rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .badge-pdf   { background: var(--color-info-100, #bee3f8);    color: var(--color-info-700, #2b6cb0); }
-    .badge-video { background: var(--color-warning-100, #fefcbf); color: var(--color-warning-700, #744210); }
-    .badge-presente { background: var(--color-error-100, #fed7d7); color: var(--color-error-700, #822727); }
-    .badge-ausente  { background: var(--color-success-100, #c6f6d5); color: var(--color-success-700, #22543d); }
-    /* Links */
-    a { color: var(--color-primary-500, #004F9F); }
-    .link-icon::after { content: " ↗"; font-size: 0.75em; }
-    /* Footer */
-    .bi-footer {
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--color-neutral-500, #718096);
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--color-neutral-200, #e2e8f0);
-    }
+    .toolbar { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+    .toolbar .field-input { flex: 1; min-width: 220px; }
+    .filter-group { display: flex; gap: 0.4rem; }
+    .only-pending { display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: #4a5568; cursor: pointer; }
+
+    /* Links cell */
+    .link-list { display: flex; flex-direction: column; gap: 4px; }
+    .link-row { display: flex; align-items: baseline; gap: 6px; }
+    .link-secao { font-size: .7rem; color: #718096; white-space: nowrap; }
+    .link-url { font-size: .8rem; color: #004F9F; word-break: break-all; }
+    .link-url:hover { text-decoration: underline; }
+
+    /* Row checked */
+    tr.checked { background: #f0fff4 !important; }
+    tr.checked td { color: #276749; }
+
     .hidden { display: none !important; }
+    a { color: #004F9F; }
   </style>
 </head>
 <body>
 
-<header class="ds-header" style="background:var(--color-primary-500,#004F9F);color:#fff;padding:0.75rem 1.5rem;display:flex;align-items:center;gap:1rem;">
-  <strong style="font-size:1.05rem;">SETDIG · Carta de Serviços</strong>
-  <span style="opacity:.7;font-size:0.85rem;">Auditoria de PDF e Vídeo</span>
+<header style="background:#004F9F;color:#fff;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <strong style="font-size:1.05rem;">SETDIG · Carta de Serviços</strong>
+    <span style="opacity:.7;font-size:.85rem;">Auditoria de PDF e Vídeo — Logo Política</span>
+  </div>
+  <span style="font-size:.78rem;opacity:.7;">Gerado em {{ stats.gerado_em }}</span>
 </header>
 
 <main class="bi-main">
 
+  <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="value">{{ stats.total_cartas }}</div>
@@ -148,67 +58,82 @@
     </div>
     <div class="stat-card">
       <div class="value">{{ stats.total_pdf }}</div>
-      <div class="label">URLs de PDF</div>
+      <div class="label">Links de PDF</div>
     </div>
     <div class="stat-card">
       <div class="value">{{ stats.total_video }}</div>
       <div class="label">Links de vídeo</div>
     </div>
-    <div class="stat-card">
-      <div class="value">{{ stats.total_linhas }}</div>
-      <div class="label">Total de registros</div>
+    <div class="stat-card" id="stat-verificadas">
+      <div class="value" id="cnt-verificadas">0</div>
+      <div class="label">Verificadas</div>
     </div>
   </div>
 
+  <!-- Toolbar -->
   <div class="toolbar">
-    <input type="search" id="q" placeholder="Buscar por título, órgão, seção…" oninput="filter()" />
-    <button class="filter-btn active" data-tipo="" onclick="setTipo(this)">Todos</button>
-    <button class="filter-btn" data-tipo="pdf" onclick="setTipo(this)">PDF</button>
-    <button class="filter-btn" data-tipo="video" onclick="setTipo(this)">Vídeo</button>
+    <input class="field-input" type="search" id="q" placeholder="Buscar por serviço ou órgão…" oninput="applyFilters()" />
+
+    <div class="filter-group">
+      <button class="btn btn-primary-palette btn-primary btn-sm" data-tipo="" onclick="setTipo(this)">Todos</button>
+      <button class="btn btn-primary-palette btn-secondary btn-sm" data-tipo="pdf" onclick="setTipo(this)">PDF</button>
+      <button class="btn btn-primary-palette btn-secondary btn-sm" data-tipo="video" onclick="setTipo(this)">Vídeo</button>
+    </div>
+
+    <label class="only-pending">
+      <input class="checkbox" type="checkbox" id="only-pending" onchange="applyFilters()" />
+      Só não verificadas
+    </label>
   </div>
 
-  <div class="table-wrap">
-    <table id="tbl">
+  <!-- Table -->
+  <div class="ds-table-wrap">
+    <table class="ds-table ds-table-striped" id="tbl">
       <thead>
         <tr>
+          <th class="col-select">
+            <input class="checkbox" type="checkbox" id="check-all" title="Marcar todas visíveis" onchange="toggleAll(this)" />
+          </th>
           <th>Órgão</th>
           <th>Serviço</th>
-          <th>Seção</th>
-          <th>Tipo</th>
-          <th>Mídia</th>
-          <th>Logo política</th>
+          <th>Links (PDF / Vídeo)</th>
+          <th>Logo Política</th>
         </tr>
       </thead>
       <tbody>
-        {% for r in rows %}
-        <tr data-tipo="{{ r.tipo }}"
-            data-text="{{ (r.sigla_orgao ~ ' ' ~ r.titulo_servico ~ ' ' ~ r.secao) | lower }}">
-          <td>{{ r.sigla_orgao }}</td>
-          <td>
-            {% if r.url_carta %}
-            <a href="{{ r.url_carta }}" target="_blank" rel="noopener" class="link-icon">{{ r.titulo_servico }}</a>
+        {% for c in cartas %}
+        <tr data-tipos="{{ c.tipos_str }}"
+            data-text="{{ (c.sigla_orgao ~ ' ' ~ c.titulo_servico) | lower }}"
+            data-idx="{{ loop.index0 }}">
+          <td class="col-select">
+            <input class="checkbox" type="checkbox" data-idx="{{ loop.index0 }}" onchange="toggleCheck(this)" />
+          </td>
+          <td style="white-space:nowrap;font-size:.85rem;">{{ c.sigla_orgao }}</td>
+          <td style="min-width:200px;">
+            {% if c.url_carta %}
+            <a href="{{ c.url_carta }}" target="_blank" rel="noopener" style="font-weight:500;">{{ c.titulo_servico }} ↗</a>
             {% else %}
-            {{ r.titulo_servico }}
+            <span style="font-weight:500;">{{ c.titulo_servico }}</span>
             {% endif %}
           </td>
-          <td>{{ r.secao }}</td>
-          <td>
-            <span class="badge badge-{{ r.tipo }}">{{ r.tipo }}</span>
+          <td style="min-width:320px;">
+            <div class="link-list">
+              {% for lk in c.links %}
+              <div class="link-row">
+                <span class="tag {% if lk.tipo == 'pdf' %}tag-info{% else %}tag-warning{% endif %}">{{ lk.tipo | upper }}</span>
+                <span class="link-secao">{{ lk.secao }}:</span>
+                <a href="{{ lk.url_midia }}" target="_blank" rel="noopener" class="link-url" title="{{ lk.url_midia }}">{{ lk.url_midia | truncate(55) }} ↗</a>
+              </div>
+              {% endfor %}
+            </div>
           </td>
           <td>
-            <a href="{{ r.url_midia }}" target="_blank" rel="noopener" class="link-icon"
-               title="{{ r.url_midia }}"
-               style="word-break:break-all;max-width:300px;display:inline-block;">
-              {{ r.url_midia | truncate(60) }}
-            </a>
-          </td>
-          <td>
-            {% if r.logo_politica == 'presente' %}
-            <span class="badge badge-presente">presente</span>
-            {% elif r.logo_politica == 'ausente' %}
-            <span class="badge badge-ausente">ausente</span>
+            {% if c.logo_politica == 'presente' %}
+            <span class="tag tag-error">Presente</span>
+            {% elif c.logo_politica == 'ausente' %}
+            <span class="tag tag-success">Ausente</span>
             {% else %}
-            <span style="color:var(--color-neutral-400,#a0aec0);font-size:0.8rem;">—</span>
+            <span style="color:#a0aec0;font-size:.8rem;">—</span>
             {% endif %}
           </td>
         </tr>
@@ -217,28 +142,79 @@
     </table>
   </div>
 
-  <div class="bi-footer">
-    Gerado em {{ stats.gerado_em }} · SETDIG — Secretaria-Executiva de Transformação Digital
-  </div>
-
 </main>
 
 <script>
+  const STORE_KEY = "bi-006-checklist";
   let _tipo = "";
 
-  function setTipo(btn) {
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    _tipo = btn.dataset.tipo;
-    filter();
+  // ── localStorage ──────────────────────────────────────────────
+  function loadChecked() {
+    try { return new Set(JSON.parse(localStorage.getItem(STORE_KEY) || "[]")); }
+    catch { return new Set(); }
+  }
+  function saveChecked(set) {
+    localStorage.setItem(STORE_KEY, JSON.stringify([...set]));
   }
 
-  function filter() {
-    const q = document.getElementById("q").value.toLowerCase();
+  // ── Init ──────────────────────────────────────────────────────
+  const checked = loadChecked();
+
+  document.querySelectorAll("#tbl tbody tr").forEach(tr => {
+    const idx = tr.dataset.idx;
+    const cb  = tr.querySelector("input[type=checkbox]");
+    if (checked.has(idx)) { cb.checked = true; tr.classList.add("checked"); }
+  });
+  updateCounter();
+
+  // ── Checklist ─────────────────────────────────────────────────
+  function toggleCheck(cb) {
+    const idx = cb.dataset.idx;
+    const tr  = cb.closest("tr");
+    if (cb.checked) { checked.add(idx); tr.classList.add("checked"); }
+    else            { checked.delete(idx); tr.classList.remove("checked"); }
+    saveChecked(checked);
+    updateCounter();
+  }
+
+  function toggleAll(masterCb) {
+    document.querySelectorAll("#tbl tbody tr:not(.hidden)").forEach(tr => {
+      const cb  = tr.querySelector("input[type=checkbox]");
+      const idx = tr.dataset.idx;
+      cb.checked = masterCb.checked;
+      if (masterCb.checked) { checked.add(idx); tr.classList.add("checked"); }
+      else                  { checked.delete(idx); tr.classList.remove("checked"); }
+    });
+    saveChecked(checked);
+    updateCounter();
+  }
+
+  function updateCounter() {
+    document.getElementById("cnt-verificadas").textContent = checked.size;
+  }
+
+  // ── Filtros ───────────────────────────────────────────────────
+  function setTipo(btn) {
+    document.querySelectorAll(".filter-group .btn").forEach(b => {
+      b.classList.remove("btn-primary");
+      b.classList.add("btn-secondary");
+    });
+    btn.classList.remove("btn-secondary");
+    btn.classList.add("btn-primary");
+    _tipo = btn.dataset.tipo;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const q          = document.getElementById("q").value.toLowerCase();
+    const onlyPend   = document.getElementById("only-pending").checked;
+
     document.querySelectorAll("#tbl tbody tr").forEach(tr => {
-      const matchTipo = !_tipo || tr.dataset.tipo === _tipo;
-      const matchQ    = !q || tr.dataset.text.includes(q);
-      tr.classList.toggle("hidden", !(matchTipo && matchQ));
+      const tipos     = tr.dataset.tipos.split(" ");
+      const matchTipo = !_tipo || tipos.includes(_tipo);
+      const matchQ    = !q    || tr.dataset.text.includes(q);
+      const matchPend = !onlyPend || !checked.has(tr.dataset.idx);
+      tr.classList.toggle("hidden", !(matchTipo && matchQ && matchPend));
     });
   }
 </script>

@@ -4,11 +4,13 @@ CSS do Design System é inlinado no HTML — arquivo resultante é autocontido.
 
 Uso (sem argumentos usa caminhos padrão da demanda 006):
     python scripts/generate_bi.py
-    python scripts/generate_bi.py --ds-css node_modules/@design-system-ms/ds-sis/css/ds-sis.css
+    python scripts/generate_bi.py \\
+        --ds-css node_modules/@design-system-ms/ds-sis/dist/css/ds-sis.css
 """
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
@@ -34,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--out",      dest="out_path", type=Path, default=_DEFAULT_OUT)
     p.add_argument("--template", type=Path,        default=_DEFAULT_TPL)
     p.add_argument("--ds-css",   dest="ds_css",   type=Path, default=None,
-                   help="Caminho para ds-sis.css; inlinado no HTML se fornecido.")
+                   help="ds-sis.css inlinado no HTML. Path: dist/css/ds-sis.css")
     return p.parse_args()
 
 
@@ -49,12 +51,38 @@ def _read_rows(path: Path) -> list[dict]:
     return rows
 
 
-def _stats(rows: list[dict]) -> dict:
+def _group_by_carta(rows: list[dict]) -> list[dict]:
+    """Agrupa linhas por carta — uma entrada por serviço com lista de links."""
+    groups: dict[str, dict] = defaultdict(lambda: {"links": [], "logo_politica": ""})
+    order: list[str] = []
+    for r in rows:
+        key = r["titulo_servico"]
+        if key not in groups or "sigla_orgao" not in groups[key]:
+            groups[key].update({
+                "sigla_orgao":    r["sigla_orgao"],
+                "titulo_servico": r["titulo_servico"],
+                "categoria":      r["categoria"],
+                "url_carta":      r["url_carta"],
+                "logo_politica":  r.get("logo_politica", ""),
+            })
+        if key not in order:
+            order.append(key)
+        groups[key]["links"].append({
+            "secao":    r["secao"],
+            "tipo":     r["tipo"],
+            "url_midia": r["url_midia"],
+        })
+    for key in order:
+        tipos = sorted({lk["tipo"] for lk in groups[key]["links"]})
+        groups[key]["tipos_str"] = " ".join(tipos)
+    return [groups[k] for k in order]
+
+
+def _stats(rows: list[dict], cartas: list[dict]) -> dict:
     return {
-        "total_cartas": len({r["titulo_servico"] for r in rows}),
+        "total_cartas": len(cartas),
         "total_pdf":    sum(1 for r in rows if r["tipo"] == "pdf"),
         "total_video":  sum(1 for r in rows if r["tipo"] == "video"),
-        "total_linhas": len(rows),
         "gerado_em":    date.today().strftime("%d/%m/%Y"),
     }
 
@@ -68,6 +96,7 @@ def main() -> int:
         return 1
 
     rows = _read_rows(args.in_path)
+    cartas = _group_by_carta(rows)
 
     css_content = ""
     if args.ds_css and Path(args.ds_css).exists():
@@ -81,13 +110,13 @@ def main() -> int:
         autoescape=True,
     )
     html = env.get_template(args.template.name).render(
-        rows=rows,
-        stats=_stats(rows),
+        cartas=cartas,
+        stats=_stats(rows, cartas),
         css_content=css_content,
     )
     args.out_path.write_text(html, encoding="utf-8")
 
-    s = _stats(rows)
+    s = _stats(rows, cartas)
     print(f"[ok] BI gerado: {args.out_path}")
     print(f"[ok] {s['total_cartas']} cartas | {s['total_pdf']} PDFs | {s['total_video']} vídeos")
     return 0
