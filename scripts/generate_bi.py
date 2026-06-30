@@ -26,7 +26,7 @@ _DEFAULT_TPL = _DEMANDA / "bi/template.html"
 
 _COLS = (
     "sigla_orgao", "titulo_servico", "categoria", "url_carta",
-    "secao", "tipo", "url_midia", "logo_politica",
+    "secao", "tipo", "url_midia",
 )
 
 
@@ -84,6 +84,7 @@ def _stats(rows: list[dict], cartas: list[dict]) -> dict:
     return {
         "total_cartas": len(cartas),
         "total_pdf":    sum(1 for r in rows if r["tipo"] == "pdf"),
+        "total_doc":    sum(1 for r in rows if r["tipo"] == "doc"),
         "total_video":  sum(1 for r in rows if r["tipo"] == "video"),
         "gerado_em":    date.today().strftime("%d/%m/%Y"),
     }

@@ -70,11 +70,15 @@
     </div>
     <div class="stat-card">
       <div class="value">{{ stats.total_pdf }}</div>
-      <div class="label">Links de PDF</div>
+      <div class="label">PDFs</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" id="cnt-doc">—</div>
+      <div class="label">Documentos</div>
     </div>
     <div class="stat-card">
       <div class="value">{{ stats.total_video }}</div>
-      <div class="label">Links de vídeo</div>
+      <div class="label">Vídeos</div>
     </div>
     <div class="stat-card" id="stat-verificadas">
       <div class="value" id="cnt-verificadas">0</div>
@@ -86,9 +90,18 @@
   <div class="toolbar">
     <input class="field-input" type="search" id="q" placeholder="Buscar por serviço ou órgão…" oninput="applyFilters()" />
 
+    <select class="field-input" id="orgao-filter" onchange="applyFilters()" style="max-width:180px;">
+      <option value="">Todos os órgãos</option>
+      {% set orgaos = cartas | map(attribute='sigla_orgao') | select | unique | sort %}
+      {% for o in orgaos %}
+      <option value="{{ o | lower }}">{{ o }}</option>
+      {% endfor %}
+    </select>
+
     <div class="filter-group">
-      <button class="btn btn-primary-palette btn-primary btn-sm" data-tipo="" onclick="setTipo(this)">Todos</button>
-      <button class="btn btn-primary-palette btn-secondary btn-sm" data-tipo="pdf" onclick="setTipo(this)">PDF</button>
+      <button class="btn btn-primary-palette btn-primary btn-sm"  data-tipo="" onclick="setTipo(this)">Todos</button>
+      <button class="btn btn-primary-palette btn-secondary btn-sm" data-tipo="pdf"   onclick="setTipo(this)">PDF</button>
+      <button class="btn btn-primary-palette btn-secondary btn-sm" data-tipo="doc"   onclick="setTipo(this)">DOC</button>
       <button class="btn btn-primary-palette btn-secondary btn-sm" data-tipo="video" onclick="setTipo(this)">Vídeo</button>
     </div>
 
@@ -108,14 +121,14 @@
           </th>
           <th>Órgão</th>
           <th>Serviço</th>
-          <th>Links (PDF / Vídeo)</th>
-          <th>Logo Política</th>
+          <th>Links (PDF / DOC / Vídeo)</th>
         </tr>
       </thead>
       <tbody>
         {% for c in cartas %}
         <tr data-tipos="{{ c.tipos_str }}"
             data-text="{{ (c.sigla_orgao ~ ' ' ~ c.titulo_servico) | lower }}"
+            data-orgao="{{ c.sigla_orgao | lower }}"
             data-idx="{{ loop.index0 }}">
           <td class="col-select">
             <input class="checkbox" type="checkbox" data-idx="{{ loop.index0 }}" onchange="toggleCheck(this)" />
@@ -132,7 +145,13 @@
             <div class="link-list">
               {% for lk in c.links %}
               <div class="link-row{% if loop.index > 3 %} link-extra hidden{% endif %}">
-                <span class="tag {% if lk.tipo == 'pdf' %}tag-info{% else %}tag-warning{% endif %}">{{ lk.tipo | upper }}</span>
+                {% if lk.tipo == 'pdf' %}
+                <span class="tag tag-info">PDF</span>
+                {% elif lk.tipo == 'doc' %}
+                <span class="tag tag-warning">DOC</span>
+                {% else %}
+                <span class="tag tag-error">VÍD</span>
+                {% endif %}
                 <span class="link-secao">{{ lk.secao }}:</span>
                 <a href="{{ lk.url_midia }}" target="_blank" rel="noopener" class="link-url" title="{{ lk.url_midia }}">{{ lk.url_midia | truncate(50) }} ↗</a>
               </div>
@@ -143,15 +162,6 @@
               </button>
               {% endif %}
             </div>
-          </td>
-          <td>
-            {% if c.logo_politica == 'presente' %}
-            <span class="tag tag-error">Presente</span>
-            {% elif c.logo_politica == 'ausente' %}
-            <span class="tag tag-success">Ausente</span>
-            {% else %}
-            <span style="color:#a0aec0;font-size:.8rem;">—</span>
-            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -233,16 +243,27 @@
       : `− ver menos`;
   }
 
+  // ── Counter DOC (calculado 1x) ───────────────────────────────
+  (function() {
+    let docs = 0;
+    document.querySelectorAll("#tbl tbody tr").forEach(tr => {
+      if (tr.dataset.tipos.split(" ").includes("doc")) docs++;
+    });
+    document.getElementById("cnt-doc").textContent = docs;
+  })();
+
   function applyFilters() {
-    const q          = document.getElementById("q").value.toLowerCase();
-    const onlyPend   = document.getElementById("only-pending").checked;
+    const q        = document.getElementById("q").value.toLowerCase();
+    const orgao    = document.getElementById("orgao-filter").value;
+    const onlyPend = document.getElementById("only-pending").checked;
 
     document.querySelectorAll("#tbl tbody tr").forEach(tr => {
       const tipos     = tr.dataset.tipos.split(" ");
-      const matchTipo = !_tipo || tipos.includes(_tipo);
-      const matchQ    = !q    || tr.dataset.text.includes(q);
+      const matchTipo = !_tipo  || tipos.includes(_tipo);
+      const matchQ    = !q      || tr.dataset.text.includes(q);
+      const matchOrg  = !orgao  || tr.dataset.orgao === orgao;
       const matchPend = !onlyPend || !checked.has(tr.dataset.idx);
-      tr.classList.toggle("hidden", !(matchTipo && matchQ && matchPend));
+      tr.classList.toggle("hidden", !(matchTipo && matchQ && matchOrg && matchPend));
     });
   }
 </script>

@@ -1,7 +1,6 @@
-"""CLI: extrai cartas ativas com URL de PDF ou vídeo e gera XLSX para auditoria.
+"""CLI: extrai cartas ativas com URL de PDF, DOC ou vídeo e gera XLSX para auditoria.
 
-Colunas: sigla_orgao | titulo_servico | categoria | url_carta |
-         secao | tipo | url_midia | logo_politica
+Colunas: sigla_orgao | titulo_servico | categoria | url_carta | secao | tipo | url_midia
 
 Uso:
     python scripts/extract_cartas_pdf_video.py \\
@@ -34,7 +33,6 @@ HEADERS = (
     "secao",
     "tipo",
     "url_midia",
-    "logo_politica",
 )
 
 
@@ -72,7 +70,6 @@ def _build_rows(raw: list[tuple]) -> list[tuple]:
                     secao,
                     item["tipo"],
                     item["url"],
-                    "",
                 ))
     return rows
 
@@ -95,11 +92,12 @@ def main() -> int:
         raw = cartas_secoes_brutas(conn)
     rows = _build_rows(raw)
     _write_xlsx(args.out_path, rows)
-    pdfs = sum(1 for r in rows if r[5] == "pdf")
-    videos = sum(1 for r in rows if r[5] == "video")
+    by_tipo = {}
+    for r in rows:
+        by_tipo[r[5]] = by_tipo.get(r[5], 0) + 1
     cartas_unicas = len({r[1] for r in rows})
     print(f"[db] cartas ativas varridas: {len(raw)}")
-    print(f"[ok] cartas com mídia: {cartas_unicas} | PDFs: {pdfs} | vídeos: {videos}")
+    print(f"[ok] cartas com mídia: {cartas_unicas} | " + " | ".join(f"{t}: {n}" for t, n in sorted(by_tipo.items())))
     print(f"[ok] gravado: {args.out_path}")
     return 0
 
