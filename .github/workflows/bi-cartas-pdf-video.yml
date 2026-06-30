@@ -1,35 +1,50 @@
 name: BI — Cartas com PDF e Vídeo
 
-# Publica o HTML estático pré-gerado localmente.
-# Nenhuma credencial de banco é usada aqui.
-# Para atualizar o relatório: rode os scripts localmente, commite e faça push.
+# HTML estático gerado localmente e commitado em:
+#   demandas/2026-06/006-cartas-pdf-video/bi/index.html
 #
+# Para atualizar o relatório:
 #   python scripts/extract_cartas_pdf_video.py
-#   python scripts/generate_bi.py --ds-css node_modules/@design-system-ms/ds-sis/css/ds-sis.css
-#   git add demandas/2026-06/006-cartas-pdf-video/output/cartas-pdf-video.xlsx \
-#           demandas/2026-06/006-cartas-pdf-video/bi/index.html
+#   python scripts/generate_bi.py
+#   git add demandas/2026-06/006-cartas-pdf-video/bi/index.html \
+#           demandas/2026-06/006-cartas-pdf-video/output/cartas-pdf-video.xlsx
 #   git commit -m "chore: atualiza BI cartas-pdf-video"
 #   git push
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Publicar no GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Montar artefato
+        run: |
+          mkdir -p _site/bi-cartas-pdf-video
+          cp demandas/2026-06/006-cartas-pdf-video/bi/index.html _site/bi-cartas-pdf-video/
+          printf '<meta http-equiv="refresh" content="0;url=bi-cartas-pdf-video/">' > _site/index.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: demandas/2026-06/006-cartas-pdf-video/bi
-          destination_dir: bi-cartas-pdf-video
-          commit_message: "chore: deploy BI cartas-pdf-video"
+          path: _site
+
+      - uses: actions/deploy-pages@v4
+        id: deployment
