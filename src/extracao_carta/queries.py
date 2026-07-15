@@ -117,6 +117,39 @@ def cartas_ativas_com_descricao(
     return out
 
 
+CARTAS_ATIVAS_COM_SETOR = """
+    SELECT
+        COALESCE(o.sigla, '')   AS sigla_orgao,
+        COALESCE(st.nome, '')   AS setor,
+        s.titulo                AS titulo_servico,
+        COALESCE(tema.slug, '') AS categoria,
+        s.slug                  AS slug_servico
+    FROM gerenciamento_servicos s
+    LEFT JOIN gerenciamento_setor  st   ON s.setor_id = st.id
+    LEFT JOIN gerenciamento_orgaos o    ON st.orgao_id = o.id
+    LEFT JOIN gerenciamento_temas  tema ON s.tema_id  = tema.id
+    WHERE s.ativo = true
+      AND s.titulo IS NOT NULL
+    ORDER BY sigla_orgao, setor, categoria, titulo_servico
+"""
+
+
+def cartas_ativas_com_setor(conn) -> list[tuple[str, str, str, str, str]]:
+    """Retorna (sigla_orgao, setor, titulo_servico, categoria, url)."""
+    with conn.cursor() as cur:
+        cur.execute(CARTAS_ATIVAS_COM_SETOR)
+        rows = cur.fetchall()
+    out: list[tuple[str, str, str, str, str]] = []
+    for sigla, setor, titulo, categoria, slug in rows:
+        url = (
+            f"{PORTAL_URL_BASE}/{categoria}/{slug}"
+            if categoria and slug
+            else ""
+        )
+        out.append((sigla or "", setor or "", titulo or "", categoria or "", url))
+    return out
+
+
 def titulos_por_categoria(conn, slug: str) -> list[tuple[str, str]]:
     """Lista (titulo, slug_servico) de serviços ativos no tema `slug`."""
     with conn.cursor() as cur:
