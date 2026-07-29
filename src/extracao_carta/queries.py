@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sys
 
+from .html_text import to_text
 from .normalize import normalize
 
 TITULO_TEMA = """
@@ -194,3 +195,61 @@ def cartas_secoes_brutas(conn) -> list[tuple]:
     with conn.cursor() as cur:
         cur.execute(CARTAS_SECOES_BRUTAS)
         return list(cur.fetchall())
+
+
+# União de CARTAS_ATIVAS_COM_SETOR (identificação) + CARTAS_SECOES_BRUTAS (conteúdo).
+# Query própria em vez de estender CARTAS_SECOES_BRUTAS: extract_cartas_pdf_video.py
+# consome aquela tupla por posição.
+CARTAS_ATIVAS_ESTRUTURA = """
+    SELECT
+        COALESCE(o.sigla, '')              AS sigla_orgao,
+        COALESCE(st.nome, '')              AS setor,
+        s.titulo                           AS titulo_servico,
+        COALESCE(tema.slug, '')            AS categoria,
+        s.slug                             AS slug_servico,
+        COALESCE(s.descricao, '')          AS o_que_e,
+        COALESCE(s.requisitos, '')         AS requisitos,
+        COALESCE(s.custo, '')              AS custo,
+        COALESCE(s.publico, '')            AS publico,
+        COALESCE(array_to_string(s.publico_especifico, ', '), '') AS publico_especifico,
+        COALESCE(CAST(s.tempo_total AS TEXT), '') AS tempo_total,
+        COALESCE(s.informacoes_extra, '')  AS informacoes_extra,
+        s.agendavel                        AS agendavel,
+        s.digital                          AS digital
+    FROM gerenciamento_servicos s
+    LEFT JOIN gerenciamento_setor  st   ON s.setor_id  = st.id
+    LEFT JOIN gerenciamento_orgaos o    ON st.orgao_id = o.id
+    LEFT JOIN gerenciamento_temas  tema ON s.tema_id   = tema.id
+    WHERE s.ativo = true
+      AND s.titulo IS NOT NULL
+    ORDER BY sigla_orgao, setor, categoria, titulo_servico
+"""
+
+# Índices (na tupla do SELECT) das colunas que vêm como HTML e precisam virar texto.
+_COLUNAS_HTML = (5, 6, 7, 8, 11)
+_SIM_NAO = {True: "sim", False: "não", None: ""}
+
+
+def cartas_ativas_estrutura(conn) -> list[tuple]:
+    """Cartas ativas com identificação + seções da carta já em texto plano.
+
+    Colunas: sigla_orgao, setor, titulo_servico, categoria, url, o_que_e,
+    requisitos, custo, publico, publico_especifico, tempo_total,
+    informacoes_extra, agendavel, digital.
+    """
+    with conn.cursor() as cur:
+        cur.execute(CARTAS_ATIVAS_ESTRUTURA)
+        rows = cur.fetchall()
+
+    out: list[tuple] = []
+    for row in rows:
+        campos = ["" if v is None else v for v in row]
+        for i in _COLUNAS_HTML:
+            campos[i] = to_text(campos[i])
+        categoria, slug = campos[3], campos[4]
+        url = f"{PORTAL_URL_BASE}/{categoria}/{slug}" if categoria and slug else ""
+        campos[4] = url  # slug_servico dá lugar à URL montada
+        campos[12] = _SIM_NAO.get(row[12], "")
+        campos[13] = _SIM_NAO.get(row[13], "")
+        out.append(tuple(campos))
+    return out
