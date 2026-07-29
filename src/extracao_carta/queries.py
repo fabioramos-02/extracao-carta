@@ -253,3 +253,64 @@ def cartas_ativas_estrutura(conn) -> list[tuple]:
         campos[13] = _SIM_NAO.get(row[13], "")
         out.append(tuple(campos))
     return out
+
+
+UNIDADES_COM_ORGAO = """
+    SELECT
+        COALESCE(o.sigla, '')                  AS sigla_orgao,
+        COALESCE(o.nome, '')                   AS nome_orgao,
+        u.slug_unidade,
+        u.nome                                 AS nome_unidade,
+        u.endereco,
+        COALESCE(u.complemento, '')            AS complemento,
+        u.bairro,
+        COALESCE(u.cep, '')                    AS cep,
+        COALESCE(c.cidade, '')                 AS cidade,
+        COALESCE(c.estado, '')                 AS estado,
+        u.ativo,
+        COALESCE(hor.txt, '')                  AS horario_funcionamento,
+        COALESCE(svc.n, 0)                     AS qtd_servicos,
+        u.source,
+        COALESCE(u.identificador_externo, '')  AS identificador_externo,
+        u.created_at,
+        u.updated_at
+    FROM gerenciamento_unidades u
+    JOIN gerenciamento_orgaos o     ON u.orgao_id  = o.id
+    LEFT JOIN gerenciamento_cidades c ON u.cidade_id = c.slug
+    LEFT JOIN LATERAL (
+        SELECT string_agg(
+            array_to_string(h.dia_semana, '/') || ' '
+            || to_char(h.hora_inicio_manha, 'HH24:MI') || '-'
+            || to_char(h.hora_fim_manha, 'HH24:MI')
+            || CASE WHEN h.intervalo_ativo
+                    AND h.hora_inicio_tarde IS NOT NULL
+                    AND h.hora_fim_tarde IS NOT NULL
+               THEN ', ' || to_char(h.hora_inicio_tarde, 'HH24:MI')
+                    || '-' || to_char(h.hora_fim_tarde, 'HH24:MI')
+               ELSE '' END,
+            ' | '
+        ) AS txt
+        FROM gerenciamento_horariounidade h
+        WHERE h.unidade_id = u.slug_unidade
+    ) hor ON TRUE
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*) AS n
+        FROM gerenciamento_servicosunidade sv
+        WHERE sv.unidade_id = u.slug_unidade
+    ) svc ON TRUE
+    ORDER BY sigla_orgao, estado, cidade, nome_unidade
+"""
+
+
+def unidades_com_orgao(conn) -> list[tuple]:
+    """Retorna todas as unidades com identificação do órgão, horário
+    consolidado e quantidade de serviços vinculados.
+
+    Colunas: sigla_orgao, nome_orgao, slug_unidade, nome_unidade,
+    endereco, complemento, bairro, cep, cidade, estado, ativo,
+    horario_funcionamento, qtd_servicos, source, identificador_externo,
+    created_at, updated_at.
+    """
+    with conn.cursor() as cur:
+        cur.execute(UNIDADES_COM_ORGAO)
+        return list(cur.fetchall())
