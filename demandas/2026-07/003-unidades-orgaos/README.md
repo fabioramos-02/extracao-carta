@@ -5,12 +5,15 @@
 - **Entrega**: 2026-07-29
 - **Objetivo**: exportar em XLSX **todas as unidades** cadastradas em
   `gerenciamento_unidades`, com identificação do órgão vinculado
-  (sigla + nome), endereço, cidade/estado e situação. A planilha usa
-  `auto_filter` no header — filtragem por `sigla_orgao`, `nome_orgao`,
-  `cidade`, `estado` ou `ativo` direto no Excel. Entrega junto a
-  documentação Markdown com Diagrama Entidade-Relacionamento (ER) da
-  tabela `gerenciamento_unidades` e seus relacionamentos com
-  `gerenciamento_orgaos` e `gerenciamento_cidades`.
+  (sigla + nome), endereço, cidade/estado, situação, **horário de
+  funcionamento consolidado** e **quantidade de serviços vinculados**.
+  Planilha usa `auto_filter` no header — filtragem por `sigla_orgao`,
+  `nome_orgao`, `cidade`, `estado`, `ativo` ou `qtd_servicos` direto
+  no Excel. Entrega junto a documentação Markdown com Diagrama
+  Entidade-Relacionamento (ER) da tabela `gerenciamento_unidades` e
+  seus relacionamentos com `gerenciamento_orgaos`,
+  `gerenciamento_cidades`, `gerenciamento_horariounidade` e
+  `gerenciamento_servicosunidade`.
 
 ## Reproduzir
 
